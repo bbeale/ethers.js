@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.putObject = exports.getKeys = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
@@ -65,6 +66,7 @@ function getMime(filename) {
         case 'eot': return 'application/vnd.ms-fontobject';
         case 'gif': return 'image/gif';
         case 'html': return 'text/html';
+        case 'ico': return 'image/x-icon';
         case 'js': return 'application/javascript';
         case 'jpg': return 'image/jpeg';
         case 'jpeg': return 'image/jpeg';

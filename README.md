@@ -44,7 +44,7 @@ Installing
 **browser (UMD)**
 
 ```
-<script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="text/javascript">
+<script src="https://cdn.ethers.io/lib/ethers-5.1.umd.min.js" type="text/javascript">
 </script>
 ```
 
@@ -52,7 +52,7 @@ Installing
 
 ```
 <script type="module">
-    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.0.umd.min.js";
+    import { ethers } from "https://cdn.ethers.io/lib/ethers-5.1.esm.min.js";
 </script>
 ```
 
@@ -80,9 +80,9 @@ everyone else with packages they do not need.
 
 We will keep a list of useful packages here.
 
-- `@ethersproject/experimental` ([documentation](https://docs.ethers.io))
-- `@ethersproject/cli` ([documentation](https://docs.ethers.io))
-- `@ethersproject/hardware-wallets` ([documentation](https://docs.ethers.io))
+- `@ethersproject/experimental` ([documentation](https://docs.ethers.io/v5/api/experimental/))
+- `@ethersproject/cli` ([documentation](https://docs.ethers.io/v5/cli/))
+- `@ethersproject/hardware-wallets` ([documentation](https://docs.ethers.io/v5/api/other/hardware/))
 
 
 License

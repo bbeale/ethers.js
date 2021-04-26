@@ -36,7 +36,13 @@ import { loadJson, repeat, saveJson } from "../utils";
         let version = pNpm.version;
 
         if (tarballHash !== pNpm.tarballHash) {
-            version = semver.inc(version, "patch");
+            if (semver.gt(pLocal.version, version)) {
+                // Already have a more recent version locally
+                version = pLocal.version;
+            } else {
+                // Bump the patch version from NPM
+                version = semver.inc(version, "patch");
+            }
 
             output.push([
                 "  ",
@@ -75,7 +81,12 @@ import { loadJson, repeat, saveJson } from "../utils";
 
     output.forEach((line) => { console.log(line); });
 
-})().catch((error) => {
+})().then((result) => {
+    // Something above causes this script to hang, so let's exit manually
+    setTimeout(() => {
+        process.exit(0);
+    }, 1000);
+}, (error) => {
     console.log(`Error running ${ process.argv[0] }: ${ error.message }`);
     process.exit(1);
 });

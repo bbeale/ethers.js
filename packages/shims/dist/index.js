@@ -618,8 +618,18 @@
 	        var forms = ["NFD", "NFC", "NFKD", "NFKC"];
 	        for (var i = 0; i < forms.length; i++) {
 	            try {
+	                // Simple test that catches invalid normalization
 	                if ("test".normalize(forms[i]) !== "test") {
 	                    throw new Error("failed to normalize");
+	                }
+
+	                // Some platforms seem to only fail when normalizing
+	                // specific code planes, so add those here as they
+	                // come up.
+	                //               "hangul"
+	                const checks = [ "\ud55c\uae00" ];
+	                for (var j = 0; j < checks.length; j++) {
+	                    checks[j].normalize(forms[i]);
 	                }
 	            } catch(error) {
 	                missing.push(forms[i]);
@@ -691,27 +701,25 @@
 	        var fr = new FileReader();
 	        try {
 	            fr.readAsArrayBuffer(new Blob([ "hello" ], { type: "text/plain" }));
-	            return;
-	        } catch (error) { }
-
-	        shims.push("FileReader.prototype.readAsArrayBuffer");
-	        FileReader.prototype.readAsArrayBuffer = function (blob) {
-	            if (this.readyState === this.LOADING) throw new Error("InvalidStateError");
-	            this._setReadyState(this.LOADING);
-	            this._result = null;
-	            this._error = null;
-	            var fr = new FileReader();
-	            fr.onloadend = () => {
-	                var content = atob(fr.result.split(",").pop().trim());
-	                var buffer = new ArrayBuffer(content.length);
-	                var view = new Uint8Array(buffer);
-	                view.set(Array.from(content).map(c => c.charCodeAt(0)));
-	                this._result = buffer;
-	                this._setReadyState(this.DONE);
+	        } catch (error) {
+	            shims.push("FileReader.prototype.readAsArrayBuffer");
+	            FileReader.prototype.readAsArrayBuffer = function (blob) {
+	                if (this.readyState === this.LOADING) { throw new Error("InvalidStateError"); }
+	                this._setReadyState(this.LOADING);
+	                this._result = null;
+	                this._error = null;
+	                var fr = new FileReader();
+	                fr.onloadend = () => {
+	                    var content = atob(fr.result.split(",").pop().trim());
+	                    var buffer = new ArrayBuffer(content.length);
+	                    var view = new Uint8Array(buffer);
+	                    view.set(Array.from(content).map(c => c.charCodeAt(0)));
+	                    this._result = buffer;
+	                    this._setReadyState(this.DONE);
+	                };
+	                fr.readAsDataURL(blob);
 	            };
-	            fr.readAsDataURL(blob);
-	        };
-
+	        }
 	    } catch (error) {
 	        console.log("Missing FileReader; unsupported platform");
 	    }

@@ -270,7 +270,61 @@ var blockchainData = {
                 transactions: []
             },
         ],
-        transactions: [],
+        transactions: [
+            // Berlin tests
+            {
+                hash: "0x48bff7b0e603200118a672f7c622ab7d555a28f98938edb8318803eed7ea7395",
+                type: 1,
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: []
+                    }
+                ],
+                blockHash: "0x378e24bcd568bd24cf1f54d38f13f038ee28d89e82af4f2a0d79c1f88dcd8aac",
+                blockNumber: 9812343,
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                gasPrice: bnify("0x65cf89a0"),
+                gasLimit: bnify("0x5b68"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: bnify("0"),
+                nonce: 13,
+                data: "0x",
+                r: "0x9659cba42376dbea1433cd6afc9c8ffa38dbeff5408ffdca0ebde6207281a3ec",
+                s: "0x27efbab3e6ed30b088ce0a50533364778e101c9e52acf318daec131da64e7758",
+                v: 0,
+                creates: null,
+                chainId: 3
+            },
+            {
+                hash: "0x1675a417e728fd3562d628d06955ef35b913573d9e417eb4e6a209998499c9d3",
+                type: 1,
+                accessList: [
+                    {
+                        address: "0x0000000000000000000000000000000000000000",
+                        storageKeys: [
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+                            "0x0000000000111111111122222222223333333333444444444455555555556666",
+                            "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+                        ]
+                    }
+                ],
+                blockHash: "0x7565688256f5801768237993b47ca0608796b3ace0c4b8b6e623c6092bef14b8",
+                blockNumber: 9812365,
+                from: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                gasPrice: bnify("0x65cf89a0"),
+                gasLimit: bnify("0x71ac"),
+                to: "0x32162F3581E88a5f62e8A61892B42C46E2c18f7b",
+                value: bnify("0"),
+                nonce: 14,
+                data: "0x",
+                r: "0xb0646756f89817d70cdb40aa2ae8b5f43ef65d0926dcf71a7dca5280c93763df",
+                s: "0x4d32dbd9a44a2c5639b8434b823938202f75b0a8459f3fcd9f37b2495b7a66a6",
+                v: 0,
+                creates: null,
+                chainId: 3
+            }
+        ],
         transactionReceipts: [
             {
                 blockHash: "0xc9235b8253fce455942147aa8b450d23081b867ffbb2a1e4dec934827cd80f8f",
@@ -438,21 +492,36 @@ function waiter(duration) {
     });
 }
 var allNetworks = ["default", "homestead", "ropsten", "rinkeby", "kovan", "goerli"];
-var ApiKeys = {
+// We use separate API keys because otherwise the testcases sometimes
+// fail during CI because our default keys are pretty heavily used
+var _ApiKeys = {
     alchemy: "YrPw6SWb20vJDRFkhWq8aKnTQ8JRNRHM",
     etherscan: "FPFGK6JSW2UHJJ2666FG93KP7WC999MNW7",
     infura: "49a0efa3aaee4fd99797bfa94d8ce2f1",
-    pocket: "5f7f8547b90218002e9ce9dd",
 };
+var _ApiKeysPocket = {
+    homestead: "6004bcd10040261633ade990",
+    ropsten: "6004bd4d0040261633ade991",
+    rinkeby: "6004bda20040261633ade994",
+    goerli: "6004bd860040261633ade992",
+};
+function getApiKeys(network) {
+    if (network === "default" || network == null) {
+        network = "homestead";
+    }
+    var apiKeys = ethers_1.ethers.utils.shallowCopy(_ApiKeys);
+    apiKeys.pocket = _ApiKeysPocket[network];
+    return apiKeys;
+}
 var providerFunctions = [
     {
         name: "getDefaultProvider",
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return ethers_1.ethers.getDefaultProvider(null, ApiKeys);
+                return ethers_1.ethers.getDefaultProvider(null, getApiKeys(network));
             }
-            return ethers_1.ethers.getDefaultProvider(network, ApiKeys);
+            return ethers_1.ethers.getDefaultProvider(network, getApiKeys(network));
         }
     },
     {
@@ -460,9 +529,9 @@ var providerFunctions = [
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return new ethers_1.ethers.providers.AlchemyProvider(null, ApiKeys.alchemy);
+                return new ethers_1.ethers.providers.AlchemyProvider(null, getApiKeys(network).alchemy);
             }
-            return new ethers_1.ethers.providers.AlchemyProvider(network, ApiKeys.alchemy);
+            return new ethers_1.ethers.providers.AlchemyProvider(network, getApiKeys(network).alchemy);
         }
     },
     /*
@@ -479,9 +548,9 @@ var providerFunctions = [
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return new ethers_1.ethers.providers.InfuraProvider(null, ApiKeys.infura);
+                return new ethers_1.ethers.providers.InfuraProvider(null, getApiKeys(network).infura);
             }
-            return new ethers_1.ethers.providers.InfuraProvider(network, ApiKeys.infura);
+            return new ethers_1.ethers.providers.InfuraProvider(network, getApiKeys(network).infura);
         }
     },
     {
@@ -489,9 +558,9 @@ var providerFunctions = [
         networks: allNetworks,
         create: function (network) {
             if (network == "default") {
-                return new ethers_1.ethers.providers.EtherscanProvider(null, ApiKeys.etherscan);
+                return new ethers_1.ethers.providers.EtherscanProvider(null, getApiKeys(network).etherscan);
             }
-            return new ethers_1.ethers.providers.EtherscanProvider(network, ApiKeys.etherscan);
+            return new ethers_1.ethers.providers.EtherscanProvider(network, getApiKeys(network).etherscan);
         }
     },
     {
@@ -503,12 +572,19 @@ var providerFunctions = [
     },
     {
         name: "PocketProvider",
-        networks: ["default", "homestead"],
+        // note: sans-kovan
+        networks: ["default", "homestead", "ropsten", "rinkeby", "goerli"],
         create: function (network) {
             if (network == "default") {
-                return new ethers_1.ethers.providers.PocketProvider(null, ApiKeys.pocket);
+                return new ethers_1.ethers.providers.PocketProvider(null, {
+                    applicationId: getApiKeys(network).pocket,
+                    loadBalancer: true
+                });
             }
-            return new ethers_1.ethers.providers.PocketProvider(network, ApiKeys.pocket);
+            return new ethers_1.ethers.providers.PocketProvider(network, {
+                applicationId: getApiKeys(network).pocket,
+                loadBalancer: true
+            });
         }
     },
     {
@@ -623,7 +699,12 @@ Object.keys(blockchainData).forEach(function (network) {
                 }
             });
         }); }, test, function (provider, network, test) {
-            return (provider === "EtherscanProvider");
+            // Temporary; Pocket is having issues with old transactions on some testnets
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
+                return true;
+            }
+            return false;
         });
     });
     tests.transactionReceipts.forEach(function (test) {
@@ -644,7 +725,14 @@ Object.keys(blockchainData).forEach(function (network) {
                         return [2 /*return*/, receipt];
                 }
             });
-        }); }, test);
+        }); }, test, function (provider, network, test) {
+            // Temporary; Pocket is having issues with old transactions on some testnets
+            //if ((network === "ropsten" || network === "goerli") && provider === "PocketProvider") {
+            if (provider === "PocketProvider") {
+                return true;
+            }
+            return false;
+        });
     });
 });
 (function () {
@@ -676,9 +764,16 @@ Object.keys(blockchainData).forEach(function (network) {
             }); }
         });
     }
+    /*
+    @TODO: Use this for testing pre-EIP-155 transactions on specific networks
+    addErrorTest(ethers.utils.Logger.errors.NONCE_EXPIRED, async (provider: ethers.providers.Provider) => {
+        return provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa");
+    });
+    */
+    // Wallet(id("foobar1234"))
     addErrorTest(ethers_1.ethers.utils.Logger.errors.NONCE_EXPIRED, function (provider) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            return [2 /*return*/, provider.sendTransaction("0xf86480850218711a0082520894000000000000000000000000000000000000000002801ba038aaddcaaae7d3fa066dfd6f196c8348e1bb210f2c121d36cb2c24ef20cea1fba008ae378075d3cd75aae99ab75a70da82161dffb2c8263dabc5d8adecfa9447fa")];
+            return [2 /*return*/, provider.sendTransaction("0xf86480850218711a00825208940000000000000000000000000000000000000000038029a04320fd28c8e6c95da9229d960d14ffa3de81f83abe3ad9c189642c83d7d951f3a009aac89e04a8bafdcf618e21fed5e7b1144ca1083a301fd5fde28b0419eb63ce")];
         });
     }); });
     addErrorTest(ethers_1.ethers.utils.Logger.errors.INSUFFICIENT_FUNDS, function (provider) { return __awaiter(_this, void 0, void 0, function () {
@@ -690,6 +785,7 @@ Object.keys(blockchainData).forEach(function (network) {
                         to: "0x8ba1f109551bD432803012645Ac136ddd64DBA72",
                         gasPrice: 9000000000,
                         gasLimit: 21000,
+                        chainId: 3,
                         value: 1
                     };
                     wallet = ethers_1.ethers.Wallet.createRandom();
@@ -724,30 +820,83 @@ Object.keys(blockchainData).forEach(function (network) {
 testFunctions.push({
     name: "sends a transaction",
     extras: ["funding"],
-    timeout: 300,
+    timeout: 900,
     networks: ["ropsten"],
+    checkSkip: function (provider, network, test) {
+        return false;
+    },
     execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
-        var wallet, addr, b0, tx, b1;
+        var gasPrice, wallet, addr, b0, tx, b1;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
+                case 0: return [4 /*yield*/, provider.getGasPrice()];
+                case 1:
+                    gasPrice = (_a.sent()).mul(10);
                     wallet = fundWallet.connect(provider);
                     addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
-                case 1:
+                case 2:
                     b0 = _a.sent();
                     assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
                     return [4 /*yield*/, wallet.sendTransaction({
                             to: addr,
-                            value: 123
+                            value: 123,
+                            gasPrice: gasPrice
                         })];
-                case 2:
+                case 3:
                     tx = _a.sent();
                     return [4 /*yield*/, tx.wait()];
-                case 3:
+                case 4:
                     _a.sent();
                     return [4 /*yield*/, provider.getBalance(wallet.address)];
+                case 5:
+                    b1 = _a.sent();
+                    assert_1.default.ok(b0.gt(b1), "balance is decreased");
+                    return [2 /*return*/];
+            }
+        });
+    }); }
+});
+testFunctions.push({
+    name: "sends an EIP-2930 transaction",
+    extras: ["funding"],
+    timeout: 900,
+    networks: ["ropsten"],
+    checkSkip: function (provider, network, test) {
+        return false;
+    },
+    execute: function (provider) { return __awaiter(void 0, void 0, void 0, function () {
+        var gasPrice, wallet, addr, b0, tx, b1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, provider.getGasPrice()];
+                case 1:
+                    gasPrice = (_a.sent()).mul(10);
+                    wallet = fundWallet.connect(provider);
+                    addr = "0x8210357f377E901f18E45294e86a2A32215Cc3C9";
+                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                case 2:
+                    b0 = _a.sent();
+                    assert_1.default.ok(b0.gt(ethers_1.ethers.constants.Zero), "balance is non-zero");
+                    return [4 /*yield*/, wallet.sendTransaction({
+                            type: 1,
+                            accessList: {
+                                "0x8ba1f109551bD432803012645Ac136ddd64DBA72": [
+                                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                                    "0x0000000000000000000000000000000000000000000000000000000000000042",
+                                ]
+                            },
+                            to: addr,
+                            value: 123,
+                            gasPrice: gasPrice
+                        })];
+                case 3:
+                    tx = _a.sent();
+                    return [4 /*yield*/, tx.wait()];
                 case 4:
+                    _a.sent();
+                    return [4 /*yield*/, provider.getBalance(wallet.address)];
+                case 5:
                     b1 = _a.sent();
                     assert_1.default.ok(b0.gt(b1), "balance is decreased");
                     return [2 /*return*/];
@@ -765,7 +914,7 @@ describe("Test Provider Methods", function () {
                 switch (_a.label) {
                     case 0:
                         this.timeout(300000);
-                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
+                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
                         return [4 /*yield*/, ethers_1.ethers.utils.fetchJson("https://api.ethers.io/api/v1/?action=fundAccount&address=" + fundWallet.address.toLowerCase())];
                     case 1:
                         funder = _a.sent();
@@ -790,7 +939,7 @@ describe("Test Provider Methods", function () {
                     case 1:
                         // Wait until the funding is complete
                         _a.sent();
-                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", ApiKeys.infura);
+                        provider = new ethers_1.ethers.providers.InfuraProvider("ropsten", getApiKeys("ropsten").infura);
                         return [4 /*yield*/, provider.getGasPrice()];
                     case 2:
                         gasPrice = _a.sent();
@@ -856,10 +1005,10 @@ describe("Test Provider Methods", function () {
                                     attempt = 0;
                                     _a.label = 5;
                                 case 5:
-                                    if (!(attempt < attempts)) return [3 /*break*/, 10];
+                                    if (!(attempt < attempts)) return [3 /*break*/, 11];
                                     _a.label = 6;
                                 case 6:
-                                    _a.trys.push([6, 8, , 9]);
+                                    _a.trys.push([6, 8, , 10]);
                                     return [4 /*yield*/, Promise.race([
                                             test.execute(provider),
                                             waiter(timeout * 1000).then(function (result) { throw new Error("timeout"); })
@@ -871,11 +1020,16 @@ describe("Test Provider Methods", function () {
                                     attemptError_1 = _a.sent();
                                     console.log("*** Failed attempt " + (attempt + 1) + ": " + attemptError_1.message);
                                     error = attemptError_1;
-                                    return [3 /*break*/, 9];
+                                    // On failure, wait 5s
+                                    return [4 /*yield*/, waiter(5000)];
                                 case 9:
+                                    // On failure, wait 5s
+                                    _a.sent();
+                                    return [3 /*break*/, 10];
+                                case 10:
                                     attempt++;
                                     return [3 /*break*/, 5];
-                                case 10: throw error;
+                                case 11: throw error;
                             }
                         });
                     });
@@ -895,7 +1049,7 @@ describe("Extra tests", function () {
                         return [4 /*yield*/, waiter(2000)];
                     case 1:
                         _a.sent();
-                        provider = new ethers_1.ethers.providers.EtherscanProvider(null, ApiKeys.etherscan);
+                        provider = new ethers_1.ethers.providers.EtherscanProvider(null, getApiKeys(null).etherscan);
                         return [4 /*yield*/, provider.call({
                                 to: "0xbf320b8336b131e0270295c15478d91741f9fc11",
                                 data: "0x3ad206cc000000000000000000000000f6e914d07d12636759868a61e52973d17ed7111b0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000006400000000000000000000000022b3faaa8df978f6bafe18aade18dc2e3dfa0e0c000000000000000000000000998b3b82bc9dba173990be7afb772788b5acb8bd000000000000000000000000ba11d00c5f74255f56a5e366f4f77f5a186d7f55000000000000000000000000c7579bb99af590ec71c316e1ac4436c5350395940000000000000000000000002a05d22db079bc40c2f77a1d1ff703a56e631cc10000000000000000000000000d8775f648430679a709e98d2b0cb6250d2887ef0000000000000000000000009a0242b7a33dacbe40edb927834f96eb39f8fbcb000000000000000000000000c78593c17482ea5de44fdd84896ffd903972878e000000000000000000000000e7d3e4413e29ae35b0893140f4500965c74365e500000000000000000000000037d40510a2f5bc98aa7a0f7bf4b3453bcfb90ac10000000000000000000000004a6058666cf1057eac3cd3a5a614620547559fc900000000000000000000000035a69642857083ba2f30bfab735dacc7f0bac96900000000000000000000000084f7c44b6fed1080f647e354d552595be2cc602f0000000000000000000000001500205f50bf3fd976466d0662905c9ff254fc9c000000000000000000000000660b612ec57754d949ac1a09d0c2937a010dee05000000000000000000000000acfa209fb73bf3dd5bbfb1101b9bc999c49062a5000000000000000000000000865d176351f287fe1b0010805b110d08699c200a000000000000000000000000633a8f8e557702039463f9f2eb20b7936fff8c050000000000000000000000001961b3331969ed52770751fc718ef530838b6dee0000000000000000000000002fb12bccf6f5dd338b76be784a93ade0724256900000000000000000000000004d8fc1453a0f359e99c9675954e656d80d996fbf0000000000000000000000006aeb95f06cda84ca345c2de0f3b7f96923a44f4c0000000000000000000000008aa33a7899fcc8ea5fbe6a608a109c3893a1b8b200000000000000000000000014c926f2290044b647e1bf2072e67b495eff1905000000000000000000000000763186eb8d4856d536ed4478302971214febc6a90000000000000000000000008a1e3930fde1f151471c368fdbb39f3f63a65b55000000000000000000000000a8daa52ded91f7c82b4bb02b4b87c6a841db1fd500000000000000000000000033803edf44a71b9579f54cd429b53b06c0eeab83000000000000000000000000026e62dded1a6ad07d93d39f96b9eabd59665e0d00000000000000000000000047da42696a866cdc61a4c809a515500a242909c100000000000000000000000008b4c866ae9d1be56a06e0c302054b4ffe067b43000000000000000000000000420335d3deef2d5b87524ff9d0fb441f71ea621f000000000000000000000000983f7cc12d0b5d512b0f91f51a4aa478ac4def46000000000000000000000000b2bfeb70b903f1baac7f2ba2c62934c7e5b974c40000000000000000000000009b11b1b271a224a271619f3419b1b080fdec5b4a0000000000000000000000007b1309c1522afd4e66c31e1e6d0ec1319e1eba5e000000000000000000000000959529102cfde07b1196bd27adedc196d75f84f6000000000000000000000000107c4504cd79c5d2696ea0030a8dd4e92601b82e000000000000000000000000539efe69bcdd21a83efd9122571a64cc25e0282b000000000000000000000000e5a7c12972f3bbfe70ed29521c8949b8af6a0970000000000000000000000000f8ad7dfe656188a23e89da09506adf7ad9290d5d0000000000000000000000005732046a883704404f284ce41ffadd5b007fd668000000000000000000000000df6ef343350780bf8c3410bf062e0c015b1dd671000000000000000000000000f028adee51533b1b47beaa890feb54a457f51e89000000000000000000000000dd6bf56ca2ada24c683fac50e37783e55b57af9f000000000000000000000000ef51c9377feb29856e61625caf9390bd0b67ea18000000000000000000000000c80c5e40220172b36adee2c951f26f2a577810c50000000000000000000000001f573d6fb3f13d689ff844b4ce37794d79a7ff1c000000000000000000000000d2d6158683aee4cc838067727209a0aaf4359de30000000000000000000000007cdec53fe4770729dac314756c10e2f37b8d2b2f000000000000000000000000cc34366e3842ca1bd36c1f324d15257960fcc8010000000000000000000000006b01c3170ae1efebee1a3159172cb3f7a5ecf9e5000000000000000000000000139d9397274bb9e2c29a9aa8aa0b5874d30d62e300000000000000000000000063f584fa56e60e4d0fe8802b27c7e6e3b33e007f000000000000000000000000780116d91e5592e58a3b3c76a351571b39abcec60000000000000000000000000e511aa1a137aad267dfe3a6bfca0b856c1a3682000000000000000000000000327682779bab2bf4d1337e8974ab9de8275a7ca80000000000000000000000001b80eeeadcc590f305945bcc258cfa770bbe18900000000000000000000000005af2be193a6abca9c8817001f45744777db307560000000000000000000000009e77d5a1251b6f7d456722a6eac6d2d5980bd891000000000000000000000000e25f0974fea47682f6a7386e4217da70512ec997000000000000000000000000558ec3152e2eb2174905cd19aea4e34a23de9ad6000000000000000000000000b736ba66aad83adb2322d1f199bfa32b3962f13c000000000000000000000000509a38b7a1cc0dcd83aa9d06214663d9ec7c7f4a0000000000000000000000000327112423f3a68efdf1fcf402f6c5cb9f7c33fd0000000000000000000000005acd19b9c91e596b1f062f18e3d02da7ed8d1e5000000000000000000000000003df4c372a29376d2c8df33a1b5f001cd8d68b0e0000000000000000000000006aac8cb9861e42bf8259f5abdc6ae3ae89909e11000000000000000000000000d96b9fd7586d9ea24c950d24399be4fb65372fdd00000000000000000000000073dd069c299a5d691e9836243bcaec9c8c1d87340000000000000000000000005ecd84482176db90bb741ddc8c2f9ccc290e29ce000000000000000000000000fa456cf55250a839088b27ee32a424d7dacb54ff000000000000000000000000b683d83a532e2cb7dfa5275eed3698436371cc9f000000000000000000000000ccbf21ba6ef00802ab06637896b799f7101f54a20000000000000000000000007b123f53421b1bf8533339bfbdc7c98aa94163db0000000000000000000000006ecccf7ebc3497a9334f4fe957a7d5fa933c5bcc0000000000000000000000004fabb145d64652a948d72533023f6e7a623c7c53000000000000000000000000e1aee98495365fc179699c1bb3e761fa716bee6200000000000000000000000056d811088235f11c8920698a204a5010a788f4b300000000000000000000000026e75307fc0c021472feb8f727839531f112f3170000000000000000000000007d4b8cce0591c9044a22ee543533b72e976e36c30000000000000000000000003c6a7ab47b5f058be0e7c7fe1a4b7925b8aca40e0000000000000000000000001d462414fe14cf489c7a21cac78509f4bf8cd7c000000000000000000000000043044f861ec040db59a7e324c40507addb67314200000000000000000000000004f2e7221fdb1b52a68169b25793e51478ff0329000000000000000000000000954b890704693af242613edef1b603825afcd708000000000000000000000000a8f93faee440644f89059a2c88bdc9bf3be5e2ea0000000000000000000000001234567461d3f8db7496581774bd869c83d51c9300000000000000000000000056ba2ee7890461f463f7be02aac3099f6d5811a80000000000000000000000006c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e000000000000000000000000f444cd92e09cc8b2a23cd2eecb3c1e4cc8da6958000000000000000000000000cf8f9555d55ce45a3a33a81d6ef99a2a2e71dee2000000000000000000000000076c97e1c869072ee22f8c91978c99b4bcb0259100000000000000000000000017b26400621695c2d8c2d8869f6259e82d7544c4000000000000000000000000679badc551626e01b23ceecefbc9b877ea18fc46000000000000000000000000336f646f87d9f6bc6ed42dd46e8b3fd9dbd15c220000000000000000000000005d3a536e4d6dbd6114cc1ead35777bab948e3643000000000000000000000000f5dce57282a584d2746faf1593d3121fcac444dc0000000000000000000000001d9e20e581a5468644fe74ccb6a46278ef377f9e000000000000000000000000177d39ac676ed1c67a2b268ad7f1e58826e5b0af"
@@ -1047,6 +1201,21 @@ describe("Test API Key Formatting", function () {
         });
         assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
         assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
+        // Test complex API key with loadBalancer
+        [true, false].forEach(function (loadBalancer) {
+            var apiKeyObject = ethers_1.ethers.providers.PocketProvider.getApiKey({
+                applicationId: applicationId, loadBalancer: loadBalancer
+            });
+            assert_1.default.equal(apiKeyObject.applicationId, applicationId);
+            assert_1.default.equal(apiKeyObject.loadBalancer, loadBalancer);
+            assert_1.default.ok(apiKeyObject.applicationSecretKey == null);
+            var apiKeyObject2 = ethers_1.ethers.providers.PocketProvider.getApiKey({
+                applicationId: applicationId, applicationSecretKey: applicationSecretKey, loadBalancer: loadBalancer
+            });
+            assert_1.default.equal(apiKeyObject2.applicationId, applicationId);
+            assert_1.default.equal(apiKeyObject2.applicationSecretKey, applicationSecretKey);
+            assert_1.default.equal(apiKeyObject2.loadBalancer, loadBalancer);
+        });
         // Fails on invalid applicationId type
         assert_1.default.throws(function () {
             var apiKey = ethers_1.ethers.providers.PocketProvider.getApiKey({
@@ -1152,6 +1321,57 @@ describe("Test Events", function () {
                     case 1:
                         _a.sent();
                         return [2 /*return*/];
+                }
+            });
+        });
+    });
+});
+describe("Bad ENS resolution", function () {
+    var provider = providerFunctions[0].create("ropsten");
+    it("signer has a bad ENS name", function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var wallet, tx, error_2, tos, i, to, tx, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.timeout(300000);
+                        wallet = new ethers_1.ethers.Wallet(ethers_1.ethers.utils.id("random-wallet"), provider);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, wallet.sendTransaction({ to: "junk", value: 1 })];
+                    case 2:
+                        tx = _a.sent();
+                        console.log("TX", tx);
+                        assert_1.default.ok(false, "failed to throw an exception");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _a.sent();
+                        assert_1.default.ok(error_2.argument === "tx.to" && error_2.value === "junk");
+                        return [3 /*break*/, 4];
+                    case 4:
+                        tos = [null, Promise.resolve(null)];
+                        i = 0;
+                        _a.label = 5;
+                    case 5:
+                        if (!(i < tos.length)) return [3 /*break*/, 10];
+                        to = tos[i];
+                        _a.label = 6;
+                    case 6:
+                        _a.trys.push([6, 8, , 9]);
+                        return [4 /*yield*/, wallet.sendTransaction({ to: to, value: 1 })];
+                    case 7:
+                        tx = _a.sent();
+                        console.log("TX", tx);
+                        return [3 /*break*/, 9];
+                    case 8:
+                        error_3 = _a.sent();
+                        assert_1.default.ok(error_3.code === "INSUFFICIENT_FUNDS");
+                        return [3 /*break*/, 9];
+                    case 9:
+                        i++;
+                        return [3 /*break*/, 5];
+                    case 10: return [2 /*return*/];
                 }
             });
         });
